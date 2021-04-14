@@ -99,6 +99,26 @@ rule varscan2_mpileup2Indel:
 
 
 
+rule snpeffAnno:
+	input:
+		inputvcfP="/shared/liuhj/tonglv/process/20210323-pindel/deletion-vcfs/"
+	output:
+		outputP=directory("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/vcf_snpeff")
+	params:
+		scriptPath="/shared/liuhj/tonglv/ICU_tonglv_scripts/iSNV_calling_bwa2_AE004091.2",
+		dbID="AE004091",
+		snpeffSoftP="/shared/liuhj/software/snpEff",
+	shell:
+		"bash {params.scriptPath}/pipeline-snpeff.sh  {input} {output} {params.dbID} {params.snpeffSoftP}"
+'''
+vcfP=$1
+outSnpeffVcfP=$2
+dbID=$3
+snpeffSoftP=$4
+'''
+
+
+
 
 
 
