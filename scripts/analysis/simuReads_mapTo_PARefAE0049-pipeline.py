@@ -4,10 +4,9 @@
 ###################################
 
 REP_INDEX = ["PA.refCutToEcoli.step1.Len150",]
-#RefGnms=["10","12","13","14","15","16","17","18","19","1","20","2","3","4","5","6","7","8"]
-#RefGnms=["10","12","13","14","15","16","17","18","19",'20',"1","2","3","4","5","6","7","8"]
-
 RefGnms = ["AE004091.2"]
+
+
 
 rule all:
 	input:
@@ -108,7 +107,7 @@ rule bam_filtHomoSeqRegion:
 		refID="{OtherBacteriaRef}",
 		scriptP="/shared/liuhj/tonglv/ICU_tonglv_scripts"
 	shell:
-		"python {params.scriptP}/20210324-PA-simulateReads-mapToEcoli-filt-homoRegion.py -i {input[0]} -o  {output}  -r {params.refID} "
+		"python {params.scriptP}/PA-simulateReads-find-homoRegions.py -i {input[0]} -o  {output}  -r {params.refID} "
 
 
 

@@ -21,17 +21,9 @@ rule all:
 		##general snvFreq_distribut_Stat
 		expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/general-snvFreq_distribut_Stat",person=personLst),
 
-	
-		##
-		#expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/compare0.5_NotsameDateSamps/{person}",person=personLst),
-		#expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/compare0.5/{person}",person=personLst),
-
 		## snvNum_Stat
-		#expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/snvNum_Stat",person=personLst),
 		expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/snvNum_Stat_noSNV_OtherBacfilted-FiltSimutPARepeat",person= personLst),
 
-		## snv and SNP snpeff Stat
-		expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/snvSNP_snpeff_Stat_OtherBacFilted-FiltSimutPARepeat",person=personLst),
 		##all sa
 		#expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/20210331-snvSNP_AnnoStat_OtherBacFilted_RepeatFilted",person=personLst),
 
@@ -39,8 +31,6 @@ rule all:
 		#expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/subGnm",person=personLst),
 		#expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/subGnm_prokka_gff",person=personLst),
 
-		## 0028-0134 snv share
-		#expand("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/snv_distrib",person=personLst),
 
 
 
@@ -132,37 +122,6 @@ snpeffSoftP=$4
 
 
 '''
-rule iSNV_SameDateSampsCompare:
-	input:
-		iSNVtablePath="/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}",
-
-	output:
-		outputP=directory("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/compare0.5_NotsameDateSamps/{person}")
-	params:
-		scriptPath="/shared/liuhj/tonglv/ICU_tonglv_scripts",
-
-	shell:
-		"python  {params.scriptPath}/iSNVpy_Freq_sameDateSamp.py  -i {input.iSNVtablePath} -o  {output.outputP}   "
-
-
-
-
-rule iSNV_SameDateSampsCompare_consensus:
-	input:
-		iSNVtablePath="/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}",
-		infoF = "/shared/liuhj/tonglv/Infos/20210311-info.txt"
-	output:
-		outputP=directory("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/compare0.5/{person}")
-	params:
-		scriptPath="/shared/liuhj/tonglv/ICU_tonglv_scripts",
-		minFreq="0.5"
-	shell:
-		"python  {params.scriptPath}/iSNVpy_Freq_sameDateSamp_consensus.py  -f  {input.infoF} -i {input.iSNVtablePath} -o  {output.outputP}   -m {params.minFreq} "
-'''
-
-
-
-'''
 
 rule iSNV_snvNumCount:
 	input:
@@ -184,11 +143,13 @@ rule iSNV_snvNumCount:
 '''
 
 
+
+
 rule iSNV_snvNumCount_noSNV:
 	input:
 		iSNVtable="/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/all.iSNV_with_SNP.pyResults.txt",
 		infoF = "/shared/liuhj/tonglv/Infos/20210311-info.txt",
-		filtEcoliHomoPosi="/shared/liuhj/tonglv/process/20210402-bwaToOtherBacteria/PA-HomoRegions-FromOtherBacteria.txt",
+		filtHomoPosi="/shared/liuhj/tonglv/process/20210402-bwaToOtherBacteria/PA-HomoRegions-FromOtherBacteria.txt",
 		snpEffPath="/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/vcf_snpeff",
 		RepeatMaskedGnm="/shared/liuhj/tonglv/process/RefGnmRepeatRegion/repeatmasker_out/AE004091.2.fasta.masked.fasta",
 		RepeatPosiF="/shared/liuhj/tonglv/process/20210405-PAsimulateReads-mapToAE0049/PA.RepeatRegion-Cov30-identy60.Posi.txt"
@@ -202,51 +163,8 @@ rule iSNV_snvNumCount_noSNV:
 		
 	shell:
 		"python  {params.scriptPath}/iSNVpy_snvSNP_Stat_clade.py   -i {input.iSNVtable}  \
-		-f {input.infoF} -e {input.snpEffPath} -R {input.RepeatPosiF} -o  {output.outputP}  -m {params.minFreq}  -M {params.maxFreq}  -E {input.filtEcoliHomoPosi}   "
+		-f {input.infoF} -e {input.snpEffPath} -R {input.RepeatPosiF} -o  {output.outputP}  -m {params.minFreq}  -M {params.maxFreq}  -E {input.filtHomoPosi}   "
 
-
-
-
-
-
-rule iSNV_snvSNP_snpeff_Stat:
-	input:
-		iSNVtable="/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/all.iSNV_with_SNP.pyResults.txt",
-		infoF = "/shared/liuhj/tonglv/Infos/20210311-info.txt",
-		filtEcoliHomoPosi="/shared/liuhj/tonglv/process/20210402-bwaToOtherBacteria/PA-HomoRegions-FromOtherBacteria.txt",
-		snpEffPath="/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/vcf_snpeff",
-		RepeatRegion="/shared/liuhj/tonglv/process/RefGnmRepeatRegion/repeatmasker_out/AE004091.2.fasta.masked.fasta",
-		RepeatPosiF="/shared/liuhj/tonglv/process/20210405-PAsimulateReads-mapToAE0049/PA.RepeatRegion-Cov30-identy60.Posi.txt"
-	output:
-		outputP=directory("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/snvSNP_snpeff_Stat_OtherBacFilted-FiltSimutPARepeat")
-	params:
-		scriptPath="/shared/liuhj/tonglv/ICU_tonglv_scripts/iSNV_calling_bwa2_AE004091.2",
-		#iSNV_FreqThres = 0.05,     ## for examp: iSNV_FreqThres = 0.05, mean iSNV freq :>=0.05 && <0.95  ;SNP: >=0.95
-		minFreq	= 0.1,
-		maxFreq	= 0.9,
-	shell:
-		"python  {params.scriptPath}/iSNVpy_iSNV_snpeff_clade.py  -i {input.iSNVtable}  \
-		-f {input.infoF} -e {input.snpEffPath} -R {input.RepeatPosiF} -o  {output.outputP} -m {params.minFreq}  -M {params.maxFreq}  -E {input.filtEcoliHomoPosi} "
-
-
-
-
-rule iSNV_snvSNP_AnnoStat_FiledOtherPA_FiltedRepeatRegion:
-	input:
-		iSNVtable="/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/all.iSNV_with_SNP.pyResults.txt",
-		infoF = "/shared/liuhj/tonglv/Infos/20210311-info.txt",
-		filtEcoliHomoPosi="/shared/liuhj/tonglv/process/20210402-bwaToOtherBacteria/PA-HomoRegions-FromOtherBacteria.txt",
-		RepeatRegion="/shared/liuhj/tonglv/process/RefGnmRepeatRegion/repeatmasker_out/AE004091.2.fasta.masked.fasta",
-	output:
-		outputP=directory("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/20210331-snvSNP_AnnoStat_OtherBacFilted_RepeatFilted")
-	params:
-		scriptPath="/shared/liuhj/tonglv/ICU_tonglv_scripts/iSNV_calling_bwa2_AE004091.2",
-		#iSNV_FreqThres = 0.05,     ## for examp: iSNV_FreqThres = 0.05, mean iSNV freq :>=0.05 && <0.95  ;SNP: >=0.95
-		minFreq	= 0.1,
-		maxFreq	= 0.9,
-	shell:
-		"python  {params.scriptPath}/iSNVpy_iSNV_snpeff_clade_stat.py  -i {input.iSNVtable}  \
-		-f {input.infoF}  -o  {output.outputP} -m {params.minFreq}  -M {params.maxFreq}  -E {input.filtEcoliHomoPosi} -R {input.RepeatRegion}"
 
 
 rule iSNV_SNP_consensusGnm:
@@ -288,30 +206,6 @@ rule consensusGnm_prokkaAnno:
 #gffP=$1
 #outP=$2
 #genbankdb=$3  ## tonglv --- /home/amax/anaconda3/envs/biotools_lhj/db/Pseudomonas/AE004091.2.gb
-
-
-
-
-
-
-rule iSNV_snv_distrib_0028_0134:
-	input:
-		iSNVtable="/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/all.iSNV_with_SNP.pyResults.txt",
-		infoF = "/shared/liuhj/tonglv/Infos/20210311-info.txt",
-	output:
-		outputP=directory("/shared/liuhj/tonglv/process/20210401-person_ntfreq_tables/{person}/snv_distrib")
-	params:
-		scriptPath="/shared/liuhj/tonglv/ICU_tonglv_scripts/iSNV_calling_bwa2_AE004091.2",
-		#iSNV_FreqThres = 0.05,     ## for examp: iSNV_FreqThres = 0.05, mean iSNV freq :>=0.05 && <0.95  ;SNP: >=0.95
-		minFreq	= 0.1,
-		maxFreq	= 0.9,
-		
-
-	shell:
-		"python  {params.scriptPath}/iSNVpy_P7withP2_0028-0134_iSNV.py  -i {input.iSNVtable}  \
-		-f {input.infoF}  -o  {output.outputP} -m {params.minFreq}  -M {params.maxFreq}  "
-
-
 
 
 

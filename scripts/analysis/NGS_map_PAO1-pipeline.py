@@ -32,7 +32,7 @@ rule bwa_run:
 		"/shared/liuhj/tonglv/data/BGI/data_analysis/{samp}/{samp}_2.clean.fq.gz",
 		"/shared/liuhj/tonglv/ref/ref_tonglv_AE004091.2/AE004091.2.fna.bwt"
 	output:
-		temp("/shared/liuhj/tonglv/process/bam/{samp}.sort.rmdup.bam")
+		temp("/shared/liuhj/tonglv/process/bam/{samp}.bam")
 	shell:
 		"bwa  mem  -t  5  {input[0]}  {input[1]}  {input[2]} \
       		|  samtools view -bS -F 4 -  > {output}   "   #
@@ -41,11 +41,43 @@ rule bwa_run:
 
 rule bam_sort:
 	input:
-		"/shared/liuhj/tonglv/process/bam/{samp}.sort.rmdup.bam"
+		"/shared/liuhj/tonglv/process/bam/{samp}.bam"
 	output:
-		"/shared/liuhj/tonglv/process/bam/{samp}.sort.rmdup.bam"
+		"/shared/liuhj/tonglv/process/bam/{samp}.sort.bam"
 	shell:
 		"samtools  sort  --threads   5  {input}  -o {output}"
+
+
+      	
+rule bam_rmdup:
+	input:
+		"/shared/liuhj/tonglv/process/bam/{samp}.sort.bam"
+	output:
+		"/shared/liuhj/tonglv/process/bam/{samp}.sort.rmdup.bam",
+		temp("/shared/liuhj/Ecoli-202104/process/bam/{samp}.sort.rmdup.metrics"),
+	shell:
+		"picard  MarkDuplicates  INPUT={input}   \
+OUTPUT={output[0]}  METRICS_FILE={output[1]}   REMOVE_DUPLICATES=true   "
+
+
+
+rule bam_index:
+	input:
+		"/shared/liuhj/tonglv/process/bam/{samp}.sort.rmdup.bam"
+	output:
+		"/shared/liuhj/tonglv/process/bam/{samp}.sort.rmdup.bam.bai"
+	shell:
+		"samtools index  {input}"
+
+
+
+rule refGonm_faidx:
+	input:
+		"/shared/liuhj/tonglv/ref/ref_tonglv_AE004091.2/AE004091.2.fna"
+	output:
+		"/shared/liuhj/tonglv/ref/ref_tonglv_AE004091.2/AE004091.2.fna.fai"
+	shell:
+		"samtools  faidx  {input}"
 
 
 
@@ -110,6 +142,7 @@ rule snpeffAnno:
 		snpeffSoftP="/shared/liuhj/software/snpEff",
 	shell:
 		"bash {params.scriptPath}/pipeline-snpeff.sh  {input} {output} {params.dbID} {params.snpeffSoftP}"
+
 '''
 vcfP=$1
 outSnpeffVcfP=$2

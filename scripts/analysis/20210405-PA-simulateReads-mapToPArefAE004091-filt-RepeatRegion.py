@@ -24,8 +24,7 @@ def readBlastF1(blastF):
 		q_E = max([qS_index,qE_index])
 		r_S = min([rS,rE])
 		r_E = max([rS,rE])
-		if q_S >= q_E:
-			print("hhh")
+		
 		if seqid != "Posi_" + str(rS) + "-" + str(rE) and (q_E - q_S >= 30) and indentity >= 60 :
 			for rPos in range(r_S,r_E+1):
 				if rPos not in PosiDic:
@@ -58,7 +57,6 @@ def readBlastF(blastF):
 		q_E = max([qS_index,qE_index])
 		r_S = min([rS,rE])
 		r_E = max([rS,rE])
-
 
 		if seqid != "Posi_" + str(rS) + "-" + str(rE) and (q_E - q_S >= 30) and indentity >= 60 :
 			for rPos in range(r_S,r_E+1):
@@ -105,13 +103,13 @@ if __name__ == "__main__":
 	parser.add_option("-i","--blastF",
 					  dest = "blastF",
 					  default = "",
-					  metavar = "path",
+					  metavar = "file",
 					  help = "bam file of .  [required]")
 	parser.add_option("-o","--outputfile",
 					  dest = "outputfile",
 					  default = "",
 					  metavar = "file",
-					  help = "output path [required]")
+					  help = "output file [required]")
 
 	parser.add_option("-r","--refID",
 					  dest = "refID",

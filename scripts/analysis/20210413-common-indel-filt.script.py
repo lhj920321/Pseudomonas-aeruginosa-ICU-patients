@@ -26,14 +26,14 @@ def readInfo(InfoF):
 
 
 
-def readPindelSV(pindelDelFs,allSV_homoDic,allnotHomoDic):
+def readPindelSV(pindelDelFs,allSV_homoDic,allnotHomoDic,AllHomoLen):
 	pindelDic = {}	
 	for samppindelSVF in pindelDelFs:
 		print("del file: " + samppindelSVF)
 		ID = samppindelSVF.split(".")[0]
 		file = pindelDelP + "/" + samppindelSVF
 		pindelDic[ID] = {"DEL":{}}
-		allSV_homoDic[ID],allnotHomoDic[ID] = {},{}
+		allSV_homoDic[ID],allnotHomoDic[ID],AllHomoLen[ID] = {},{},{}
 		for samppindelSVFl in open(file).readlines():
 			if "#" not in samppindelSVFl and samppindelSVFl != "\n":
 				Tags = samppindelSVFl.split("\t")
@@ -63,7 +63,7 @@ def readPindelSV(pindelDelFs,allSV_homoDic,allnotHomoDic):
 						SV += ref[ii]
 					pindelDic[ID][SVType][Posi] = SV + "_" + str(Freq)
 					
-					if HOMLEN >= 1:
+					if HOMLEN >= 2:
 						hmbs = {}
 						for bs in HOMSEQ:
 							if bs not in hmbs:
@@ -71,6 +71,7 @@ def readPindelSV(pindelDelFs,allSV_homoDic,allnotHomoDic):
 							hmbs[bs] += 1
 						if len(hmbs) == 1:
 							allSV_homoDic[ID][Posi] = HOMSEQ
+							AllHomoLen[ID][Posi] = HOMLEN
 						else:
 							allnotHomoDic[ID][Posi] = ''
 					else:
@@ -78,12 +79,12 @@ def readPindelSV(pindelDelFs,allSV_homoDic,allnotHomoDic):
 
 				
 						
-	return pindelDic,allSV_homoDic,allnotHomoDic
+	return pindelDic,allSV_homoDic,allnotHomoDic,AllHomoLen
 
 
 
 
-def readPindelIns(pindelInstFs,pindelDic,allSV_homoDic,allnotHomoDic):
+def readPindelIns(pindelInstFs,pindelDic,allSV_homoDic,allnotHomoDic,AllHomoLen):
 	print(pindelDic.keys())
 	for pindelInstF in pindelInstFs:
 		print("ins file: " + pindelInstF)
@@ -126,6 +127,7 @@ def readPindelIns(pindelInstFs,pindelDic,allSV_homoDic,allnotHomoDic):
 							hmbs[bs] += 1
 						if len(hmbs) == 1:
 							allSV_homoDic[ID][Posi] = HOMSEQ
+							AllHomoLen[ID][Posi] = HOMLEN
 						else:
 							allnotHomoDic[ID][Posi] = ''
 
@@ -133,7 +135,7 @@ def readPindelIns(pindelInstFs,pindelDic,allSV_homoDic,allnotHomoDic):
 						allnotHomoDic[ID][Posi] = ''
 
 
-	return pindelDic,allSV_homoDic,allnotHomoDic
+	return pindelDic,allSV_homoDic,allnotHomoDic,AllHomoLen
 
 
 
@@ -256,11 +258,11 @@ def main():
 	pindelInstFs = os.listdir(pindelInsP)
 	varscanFs = os.listdir(varscanP)
 
-	allSV_homoDic,allnotHomoDic = {},{}
+	allSV_homoDic,allnotHomoDic,AllHomoLen = {},{},{}
 	#print(allSV_homoDic)
 
-	pindelDic,allSV_homoDic,allnotHomoDic = readPindelSV(pindelDelFs,allSV_homoDic,allnotHomoDic)
-	pindelDic,allSV_homoDic,allnotHomoDic = readPindelIns(pindelInstFs,pindelDic,allSV_homoDic,allnotHomoDic)
+	pindelDic,allSV_homoDic,allnotHomoDic,AllHomoLen = readPindelSV(pindelDelFs,allSV_homoDic,allnotHomoDic,AllHomoLen)
+	pindelDic,allSV_homoDic,allnotHomoDic,AllHomoLen = readPindelIns(pindelInstFs,pindelDic,allSV_homoDic,allnotHomoDic,AllHomoLen)
 	allSamp_VarscanDic = readVarscanSV(varscanFs)
 
 
@@ -301,7 +303,6 @@ def main():
 
 		print(allnotCommom)
 		print(len(allnotCommom["DEL"]))
-
 		print(len(allnotCommom["INS"]))
 		outDels = {}
 		outDels_Pos = {}
@@ -355,9 +356,10 @@ def main():
 			head = ["samp","hpyFlag","hpyClade"]
 			l = [samp,hpyFlag,hpyClade]
 			sumNum,Homosum,NotHomosum =0,0,0
+			
 			for flg in ["Homo","NotHomo"]:  #,"NotHas"
 				for tp in ["DEL","INS"]:
-					head.append(tp + "-" + flg)
+					head.append(tp + "_" + flg)
 					num = 0
 					if tp in count and flg in count[tp]:
 						num = count[tp][flg]
@@ -415,17 +417,20 @@ def main():
 
 
 		#print(outDels["P1-S1"]["DEL"])
-		H = ["typy","Posi"]
+		H = ["typy","Posi","homoLen"]
 		for samp in cladeSamps:
 			H.append(samp)
 		hed = "\t".join(H)
 		for Type in ["DEL","INS"]:
 			Ls = []
 			for POSI in allnotCommom[Type]:
-				L=[Type,str(POSI)]
 				for samp in cladeSamps:
-					
+					if samp in AllHomoLen and POSI in AllHomoLen[samp]:
+						Homo_len = AllHomoLen[samp][POSI]
+						break
+				L=[Type,str(POSI),str(Homo_len)]
 
+				for samp in cladeSamps:
 					L.append(outDels[samp][Type][POSI])
 
 				Ls.append("\t".join(L))
